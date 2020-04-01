@@ -37,7 +37,9 @@ public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
                 //把字节赋给每个类的成员
                 cmd = GameMsgProtocol.UserEntryCmd.parseFrom(msgBody);
                 break;
-
+            case GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_CMD_VALUE:
+                cmd = GameMsgProtocol.WhoElseIsHereCmd.parseFrom(msgBody);
+                break;
         }
 
         //重新触发 channelRead函数

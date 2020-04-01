@@ -1,5 +1,6 @@
 package org.tinygame.herostory;
 
+import com.google.protobuf.GeneratedMessageV3;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -10,9 +11,9 @@ import org.tinygame.herostory.msg.GameMsgProtocol;
  * 消息解码器
  * 服务端收到客户端的消息
  */
-public class GameMsgDeoder extends ChannelInboundHandlerAdapter {
+public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
     @Override
-    public void channelRead(ChannelHandlerContext channelHandlerContext, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if(!(msg instanceof BinaryWebSocketFrame)) {
             return;
         }
@@ -27,10 +28,22 @@ public class GameMsgDeoder extends ChannelInboundHandlerAdapter {
         byte[] msgBody = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(msgBody);
 
+        //所有消息的基类 接收转码后的protobuf类
+        GeneratedMessageV3 cmd = null;
+
+
         switch (msgCode) {
-            case GameMsgProtocol.MsgCode.USER_ATTK_CMD_VALUE:
-                GameMsgProtocol.UserEntryCmd.parseFrom(msgBody);
+            case GameMsgProtocol.MsgCode.USER_ENTRY_CMD_VALUE:
+                //把字节赋给每个类的成员
+                cmd = GameMsgProtocol.UserEntryCmd.parseFrom(msgBody);
                 break;
+
         }
+
+        //重新触发 channelRead函数
+        if(cmd != null) {
+            ctx.fireChannelRead(cmd);
+        }
+
     }
 }

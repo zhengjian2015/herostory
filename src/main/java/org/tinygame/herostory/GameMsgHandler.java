@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.tinygame.herostory.msg.GameMsgProtocol;
 
@@ -32,11 +33,12 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         //经过protobuf的反序列化后此时的msg 已经不是 BinaryWebSocketFrame 了
         System.out.println("收到客户端消息，msgClazz="+msg.getClass().getName()+",msg="+msg);
 
         if(msg instanceof GameMsgProtocol.UserEntryCmd) {
+            System.out.println("进来了 user");
             //从指令对象中获取用户 id和英雄形象
             GameMsgProtocol.UserEntryCmd cmd = (GameMsgProtocol.UserEntryCmd) msg;
             int userId = cmd.getUserId();
@@ -53,23 +55,49 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
             newUser.heroAvatar = heroActor;
             _userMap.put(newUser.userId,newUser);
 
+            //将用户Id 附着到Channel
+            //移动消息不放用户id   如果加了用户id 消息逻辑不安全  我操作别人的移动，恶意修改，就变外挂了
+            ctx.channel().attr(AttributeKey.valueOf("userId")).set(userId);
+
+
             //构建结果并发送  返回给客户端需要编码器
             GameMsgProtocol.UserEntryResult newResult = resultBuilder.build();
             _channelGroup.writeAndFlush(newResult);
             //System.out.println(_channelGroup.size());
 
         } else if(msg instanceof GameMsgProtocol.WhoElseIsHereCmd) {
+            System.out.println("进来了 who else");
             GameMsgProtocol.WhoElseIsHereResult.Builder resultBuilder = GameMsgProtocol.WhoElseIsHereResult.newBuilder();
             for(User currUser:_userMap.values()) {
                 if(null == currUser) {
                     continue;
                 }
+
                 GameMsgProtocol.WhoElseIsHereResult.UserInfo.Builder userInfoBuilder =
                         GameMsgProtocol.WhoElseIsHereResult.UserInfo.newBuilder();
                 userInfoBuilder.setUserId(currUser.userId);
                 userInfoBuilder.setHeroAvatar(currUser.heroAvatar);
                 resultBuilder.addUserInfo(userInfoBuilder);
             }
+            GameMsgProtocol.WhoElseIsHereResult newResult = resultBuilder.build();
+            ctx.writeAndFlush(newResult);
+        } else if(msg instanceof GameMsgProtocol.UserMoveToCmd) {
+            System.out.println("进来了 userMoveTocmd");
+            Integer userId = (Integer) ctx.channel().attr(AttributeKey.valueOf("userId")).get();
+
+            if(null == userId) {
+                return;
+            }
+
+            GameMsgProtocol.UserMoveToCmd cmd = (GameMsgProtocol.UserMoveToCmd) msg;
+
+            GameMsgProtocol.UserMoveToResult.Builder resutBuilder = GameMsgProtocol.UserMoveToResult.newBuilder();
+            resutBuilder.setMoveUserId(userId);
+            resutBuilder.setMoveToPosX(cmd.getMoveToPosX());
+            resutBuilder.setMoveToPosY(cmd.getMoveToPosY());
+
+            GameMsgProtocol.UserMoveToResult newResult = resutBuilder.build();
+            _channelGroup.writeAndFlush(newResult);
         }
     }
 }

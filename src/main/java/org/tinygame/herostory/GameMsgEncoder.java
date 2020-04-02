@@ -9,6 +9,8 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import org.tinygame.herostory.msg.GameMsgProtocol;
 
 public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
+
+
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if(null == msg || !(msg instanceof GeneratedMessageV3)) {
@@ -20,10 +22,16 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
 
         if (msg instanceof GameMsgProtocol.UserEntryResult) {
             msgCode = GameMsgProtocol.MsgCode.USER_ENTRY_RESULT_VALUE;
-        } else {
+        } else if(msg instanceof GameMsgProtocol.WhoElseIsHereResult) {
+            msgCode = GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_RESULT_VALUE;
+        } else if(msg instanceof GameMsgProtocol.UserMoveToResult) {
+            msgCode = GameMsgProtocol.MsgCode.USER_MOVE_TO_CMD_VALUE;
+        }else {
             System.out.println("无法识别消息类型");
             return;
         }
+
+        System.out.println("看返回几次");
 
         byte[] byteArray = ((GeneratedMessageV3)msg).toByteArray();
 

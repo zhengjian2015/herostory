@@ -31,6 +31,7 @@ public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
         //所有消息的基类 接收转码后的protobuf类
         GeneratedMessageV3 cmd = null;
 
+        System.out.println("进来几次");
 
         switch (msgCode) {
             case GameMsgProtocol.MsgCode.USER_ENTRY_CMD_VALUE:
@@ -39,6 +40,9 @@ public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
                 break;
             case GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_CMD_VALUE:
                 cmd = GameMsgProtocol.WhoElseIsHereCmd.parseFrom(msgBody);
+                break;
+            case GameMsgProtocol.MsgCode.USER_MOVE_TO_CMD_VALUE:
+                cmd = GameMsgProtocol.UserMoveToCmd.parseFrom(msgBody);
                 break;
         }
 

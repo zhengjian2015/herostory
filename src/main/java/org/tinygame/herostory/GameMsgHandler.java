@@ -32,6 +32,32 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
         _channelGroup.add(ctx.channel());
     }
 
+    /**
+     * 当客户端离线时调用这个函数
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        super.handlerRemoved(ctx);
+
+        _channelGroup.remove(ctx.channel());
+        //先拿到用户id
+        Integer userId = (Integer) ctx.channel().attr(AttributeKey.valueOf("userId")).get();
+
+        if(userId == null) {
+            return;
+        }
+
+        _userMap.remove(userId);
+        GameMsgProtocol.UserQuitResult.Builder resultBuilder = GameMsgProtocol.UserQuitResult.newBuilder();
+        resultBuilder.setQuitUserId(userId);
+
+        GameMsgProtocol.UserQuitResult newResult = resultBuilder.build();
+        _channelGroup.writeAndFlush(newResult);
+
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         //经过protobuf的反序列化后此时的msg 已经不是 BinaryWebSocketFrame 了

@@ -10,9 +10,12 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import org.tinygame.herostory.cmdHandler.CmdHandlerFactory;
 
 public class ServerMain {
     public static void main(String[] args) {
+        CmdHandlerFactory.init();
+
         //处理服务端连接的 类似大管家
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         //bossGroup处理完塞给workGroup,类似服务员

@@ -4,10 +4,7 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
-import org.tinygame.herostory.cmdHandler.IcmdHandler;
-import org.tinygame.herostory.cmdHandler.UserEntryCmdHandler;
-import org.tinygame.herostory.cmdHandler.UserMoveToCmdHandler;
-import org.tinygame.herostory.cmdHandler.WhoElseIsHereCmdHandler;
+import org.tinygame.herostory.cmdHandler.*;
 import org.tinygame.herostory.model.User;
 import org.tinygame.herostory.model.UserManager;
 import org.tinygame.herostory.msg.GameMsgProtocol;
@@ -58,15 +55,8 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
         //经过protobuf的反序列化后此时的msg 已经不是 BinaryWebSocketFrame 了
         System.out.println("收到客户端消息，msgClazz="+msg.getClass().getName()+",msg="+msg);
 
-        IcmdHandler<? extends GeneratedMessageV3> cmdHandler = null;
+        IcmdHandler<? extends GeneratedMessageV3> cmdHandler = CmdHandlerFactory.create(msg.getClass());
 
-        if(msg instanceof GameMsgProtocol.UserEntryCmd) {
-            cmdHandler = new UserEntryCmdHandler();
-        } else if(msg instanceof GameMsgProtocol.WhoElseIsHereCmd) {
-            cmdHandler = new WhoElseIsHereCmdHandler();
-        } else if(msg instanceof GameMsgProtocol.UserMoveToCmd) {
-            cmdHandler = new UserMoveToCmdHandler();
-        }
         if(null != cmdHandler) {
             cmdHandler.handle(ctx,cost(msg));
         }

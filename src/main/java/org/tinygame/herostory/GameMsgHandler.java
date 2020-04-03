@@ -2,10 +2,7 @@ package org.tinygame.herostory;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import org.tinygame.herostory.msg.GameMsgProtocol;
 
 import java.util.HashMap;
@@ -18,18 +15,12 @@ import java.util.Map;
 public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
 
 
-    private static final ChannelGroup _channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-
-    /**
-     * 用户字典  似乎并不是线程安全的
-     */
-    private static final Map<Integer,User> _userMap = new HashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         //一个用户连上之后就会被加到这个_channelGroup里来
-        _channelGroup.add(ctx.channel());
+        Broadcaster.addChannel(ctx.channel());
     }
 
     @Override
@@ -62,7 +53,7 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
 
             //构建结果并发送  返回给客户端需要编码器
             GameMsgProtocol.UserEntryResult newResult = resultBuilder.build();
-            _channelGroup.writeAndFlush(newResult);
+            Broadcaster.broadcast(newResult);
             //System.out.println(_channelGroup.size());
 
         } else if(msg instanceof GameMsgProtocol.WhoElseIsHereCmd) {
@@ -97,7 +88,7 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
             resutBuilder.setMoveToPosY(cmd.getMoveToPosY());
 
             GameMsgProtocol.UserMoveToResult newResult = resutBuilder.build();
-            _channelGroup.writeAndFlush(newResult);
+            Broadcaster.broadcast(newResult);
         }
     }
 }

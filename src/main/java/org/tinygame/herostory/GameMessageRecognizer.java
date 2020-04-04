@@ -23,15 +23,45 @@ public class GameMessageRecognizer {
 
     }
 
-    public static void init() {
-        _msgCodeAndMsgBodyMap.put(GameMsgProtocol.MsgCode.USER_ENTRY_CMD_VALUE,GameMsgProtocol.UserEntryCmd.getDefaultInstance());
-        _msgCodeAndMsgBodyMap.put(GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_CMD_VALUE,GameMsgProtocol.WhoElseIsHereCmd.getDefaultInstance());
-        _msgCodeAndMsgBodyMap.put(GameMsgProtocol.MsgCode.USER_MOVE_TO_CMD_VALUE,GameMsgProtocol.UserMoveToCmd.getDefaultInstance());
+    static public void init() {
+        Class<?>[] innerClazzArray = GameMsgProtocol.class.getDeclaredClasses();
 
-        _msgClazzAndMsgCodeMap.put(GameMsgProtocol.UserEntryResult.class,GameMsgProtocol.MsgCode.USER_ENTRY_CMD_VALUE);
-        _msgClazzAndMsgCodeMap.put(GameMsgProtocol.WhoElseIsHereResult.class,GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_RESULT_VALUE);
-        _msgClazzAndMsgCodeMap.put(GameMsgProtocol.UserMoveToResult.class,GameMsgProtocol.MsgCode.USER_MOVE_TO_RESULT_VALUE);
-        _msgClazzAndMsgCodeMap.put(GameMsgProtocol.UserQuitResult.class,GameMsgProtocol.MsgCode.USER_QUIT_RESULT_VALUE);
+        for (Class<?> innerClazz : innerClazzArray) {
+            if (!GeneratedMessageV3.class.isAssignableFrom(innerClazz)) {
+                continue;
+            }
+
+            String clazzName = innerClazz.getSimpleName();
+            clazzName = clazzName.toLowerCase();
+
+            for (GameMsgProtocol.MsgCode msgCode : GameMsgProtocol.MsgCode.values()) {
+                String strMsgCode = msgCode.name();
+                strMsgCode = strMsgCode.replaceAll("_", "");
+                strMsgCode = strMsgCode.toLowerCase();
+
+                if (!strMsgCode.startsWith(clazzName)) {
+                    continue;
+                }
+
+                try {
+                    Object returnObj = innerClazz.getDeclaredMethod("getDefaultInstance").invoke(innerClazz);
+
+                    System.out.println( innerClazz.getName()+"=========="+ msgCode.getNumber());
+
+                    _msgCodeAndMsgBodyMap.put(
+                            msgCode.getNumber(),
+                            (GeneratedMessageV3) returnObj
+                    );
+
+                    _msgClazzAndMsgCodeMap.put(
+                            innerClazz,
+                            msgCode.getNumber()
+                    );
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
     public static Message.Builder getBuilderByMsgCode(int msgCode) {

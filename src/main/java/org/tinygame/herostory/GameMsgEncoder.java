@@ -17,7 +17,7 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
             return;
         }
 
-        int msgCode = GameMessageRecognizer.getMsgCodeByMsgClazz(msg);
+        int msgCode = GameMessageRecognizer.getMsgCodeByMsgClazz(msg.getClass());
 
         if(msgCode <= -1){
             System.out.println("无法识别消息");

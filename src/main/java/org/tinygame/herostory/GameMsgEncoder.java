@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import org.tinygame.herostory.msg.GameMsgProtocol;
 
 public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
 
@@ -18,21 +17,12 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
             return;
         }
 
-        int msgCode = -1;
+        int msgCode = GameMessageRecognizer.getMsgCodeByMsgClazz(msg);
 
-        if (msg instanceof GameMsgProtocol.UserEntryResult) {
-            msgCode = GameMsgProtocol.MsgCode.USER_ENTRY_RESULT_VALUE;
-        } else if(msg instanceof GameMsgProtocol.WhoElseIsHereResult) {
-            msgCode = GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_RESULT_VALUE;
-        } else if(msg instanceof GameMsgProtocol.UserMoveToResult) {
-            msgCode = GameMsgProtocol.MsgCode.USER_MOVE_TO_RESULT_VALUE;
-        }else if(msg instanceof GameMsgProtocol.UserQuitResult) {
-            msgCode = GameMsgProtocol.MsgCode.USER_QUIT_RESULT_VALUE;
-        } else {
-            System.out.println("无法识别消息类型");
+        if(msgCode <= -1){
+            System.out.println("无法识别消息");
             return;
         }
-
         System.out.println("看返回几次");
 
         byte[] byteArray = ((GeneratedMessageV3)msg).toByteArray();

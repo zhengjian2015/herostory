@@ -1,6 +1,6 @@
 package org.tinygame.herostory;
 
-import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -24,31 +24,26 @@ public class GameMsgDecoder extends ChannelInboundHandlerAdapter {
         byteBuf.readShort(); //读取消息的长度
         int msgCode = byteBuf.readShort(); //读取消息的编号
 
+        // 获取消息构建者
+        Message.Builder msgBuilder = GameMessageRecognizer.getBuilderByMsgCode(msgCode);
+        if (null == msgBuilder) {
+            System.out.println("无法识别的消息, msgCode = {}"+ msgCode);
+            return;
+        }
+
         //拿到消息体
         byte[] msgBody = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(msgBody);
 
-        //所有消息的基类 接收转码后的protobuf类
-        GeneratedMessageV3 cmd = null;
 
-        System.out.println("进来几次");
+        msgBuilder.clear();
+        msgBuilder.mergeFrom(msgBody);
 
-        switch (msgCode) {
-            case GameMsgProtocol.MsgCode.USER_ENTRY_CMD_VALUE:
-                //把字节赋给每个类的成员
-                cmd = GameMsgProtocol.UserEntryCmd.parseFrom(msgBody);
-                break;
-            case GameMsgProtocol.MsgCode.WHO_ELSE_IS_HERE_CMD_VALUE:
-                cmd = GameMsgProtocol.WhoElseIsHereCmd.parseFrom(msgBody);
-                break;
-            case GameMsgProtocol.MsgCode.USER_MOVE_TO_CMD_VALUE:
-                cmd = GameMsgProtocol.UserMoveToCmd.parseFrom(msgBody);
-                break;
-        }
+        Message newMsg = msgBuilder.build();
 
         //重新触发 channelRead函数
-        if(cmd != null) {
-            ctx.fireChannelRead(cmd);
+        if(newMsg != null) {
+            ctx.fireChannelRead(newMsg);
         }
 
     }

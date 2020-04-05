@@ -1,7 +1,7 @@
 package org.tinygame.herostory.model;
 
 /**
- * 用户  简化用public字段
+ * 用户
  */
 public class User {
     /**
@@ -13,4 +13,14 @@ public class User {
      * 英雄形象
      */
     public String heroAvatar;
+
+    /**
+     * 当前血量
+     */
+    public int currHp;
+
+    /**
+     * 移动状态
+     */
+    public final MoveState moveState = new MoveState();
 }

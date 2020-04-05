@@ -23,7 +23,7 @@ public class GameMsgEncoder extends ChannelOutboundHandlerAdapter {
             System.out.println("无法识别消息");
             return;
         }
-        System.out.println("看返回几次");
+        //System.out.println("看返回几次");
 
         byte[] byteArray = ((GeneratedMessageV3)msg).toByteArray();
 

@@ -5,9 +5,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 import org.tinygame.herostory.cmdHandler.*;
-import org.tinygame.herostory.model.User;
 import org.tinygame.herostory.model.UserManager;
 import org.tinygame.herostory.msg.GameMsgProtocol;
+import sun.applet.Main;
 
 
 /**
@@ -53,22 +53,10 @@ public class GameMsgHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         //经过protobuf的反序列化后此时的msg 已经不是 BinaryWebSocketFrame 了
-        System.out.println("收到客户端消息，msgClazz="+msg.getClass().getName()+",msg="+msg);
-
-        IcmdHandler<? extends GeneratedMessageV3> cmdHandler = CmdHandlerFactory.create(msg.getClass());
-
-        if(null != cmdHandler) {
-            cmdHandler.handle(ctx,cost(msg));
-        }
-
+        // 通过主线程处理器处理消息
+        MainThreadProcessor.getInstance().process(ctx, (GeneratedMessageV3) msg);
+        //new MainThreadProcessor().process(ctx, (GeneratedMessageV3) msg);
     }
 
-    //处理cmd
-    private static <Tcmd extends GeneratedMessageV3> Tcmd cost(Object msg) {
-        if(null == msg) {
-            return null;
-        } else {
-            return (Tcmd) msg;
-        }
-    }
+
 }

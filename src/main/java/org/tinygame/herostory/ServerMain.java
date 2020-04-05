@@ -16,6 +16,7 @@ public class ServerMain {
     public static void main(String[] args) {
         CmdHandlerFactory.init();
         GameMessageRecognizer.init();
+        MySqlSessionFactory.init();
 
         //处理服务端连接的 类似大管家
         EventLoopGroup bossGroup = new NioEventLoopGroup();

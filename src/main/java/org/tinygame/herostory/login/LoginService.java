@@ -51,10 +51,14 @@ public class LoginService {
         try (SqlSession mySqlSession = MySqlSessionFactory.openSession()) {
             //获取DAO
             IUserDao dao = mySqlSession.getMapper(IUserDao.class);
+
+
+            // 看看当前线程
+            LOGGER.info("login 的当前线程 = {}", Thread.currentThread().getName());
+
             //获取用户实体
             UserEntity userEntity = dao.getUserByName(userName);
 
-            System.out.println("user");
 
             if (null != userEntity) {
                 if (!password.equals(userEntity.password)) {

@@ -106,6 +106,11 @@ public class LoginService {
         }
 
         @Override
+        public int getBindId() {
+            return _userName.charAt(_userName.length() - 1);
+        }
+
+        @Override
         public void doAsync() {
             try (SqlSession mySqlSession = MySqlSessionFactory.openSession()) {
                 //获取DAO

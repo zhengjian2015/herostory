@@ -14,12 +14,10 @@ public final class AsyncOperationProcessor {
     private static final AsyncOperationProcessor _instance = new AsyncOperationProcessor();
 
 
-    private static final ExecutorService _es = Executors.newSingleThreadExecutor((newRunnable)-> {
-        Thread newThread = new Thread(newRunnable);
-        newThread.setName("AsyncOperationProcessor");
-        return newThread;
-    });
-
+    /**
+     * 线程数组  不用多线程的线程池是因为，可能出现连续点2下类似 刷单的行为
+     */
+    private final ExecutorService[] _esArray = new ExecutorService[8];
     /**
      * 获取单例对象
      *
@@ -29,7 +27,21 @@ public final class AsyncOperationProcessor {
         return _instance;
     }
 
-    private AsyncOperationProcessor(){}
+    /**
+     * 私有化类默认构造器
+     */
+    private AsyncOperationProcessor(){
+        for (int i = 0; i < _esArray.length; i++) {
+            // 线程名称
+            final String threadName = "AsyncOperationProcessor_" + i;
+            // 创建单线程服务
+            _esArray[i] = Executors.newSingleThreadExecutor((newRunnable) -> {
+                Thread newThread = new Thread(newRunnable);
+                newThread.setName(threadName);
+                return newThread;
+            });
+        }
+    }
 
 
     /**
@@ -42,7 +54,13 @@ public final class AsyncOperationProcessor {
         if (null == asyncOp) {
             return;
         }
-        _es.submit(() -> {
+
+        // 根据绑定 Id 获取线程索引
+        int bindId = Math.abs(asyncOp.getBindId());
+        int esIndex = bindId % _esArray.length;
+        System.out.println("*******");
+        System.out.println(esIndex);
+        _esArray[esIndex].submit(() -> {
             try {
                 //执行异步操作
                 asyncOp.doAsync();

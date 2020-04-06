@@ -6,6 +6,15 @@ package org.tinygame.herostory.async;
 public interface IAsyncOperation {
 
     /**
+     * 获取绑定 Id
+     *
+     * @return 绑定 Id
+     */
+    default int getBindId() {
+        return 0;
+    }
+
+    /**
      * 执行异步操作
      */
     void doAsync();

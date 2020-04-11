@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 用户管理器
+ * 用户管理器   后面重复走的时候思考了下，userMap抽出来是为后面的IcmdHandler做准备
  */
 public final class UserManager {
 

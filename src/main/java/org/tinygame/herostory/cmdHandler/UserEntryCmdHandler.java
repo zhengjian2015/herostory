@@ -25,6 +25,7 @@ public class UserEntryCmdHandler implements IcmdHandler<GameMsgProtocol.UserEntr
 
         // 获取用户 Id
         Integer userId = (Integer) ctx.channel().attr(AttributeKey.valueOf("userId")).get();
+        System.out.println("cnd"+userId);
         if (null == userId) {
             return;
         }

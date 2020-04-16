@@ -11,12 +11,14 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.tinygame.herostory.cmdHandler.CmdHandlerFactory;
+import org.tinygame.herostory.util.RedisUtil;
 
 public class ServerMain {
     public static void main(String[] args) {
         CmdHandlerFactory.init();
         GameMessageRecognizer.init();
         MySqlSessionFactory.init();
+        RedisUtil.init();
 
         //处理服务端连接的 类似大管家
         EventLoopGroup bossGroup = new NioEventLoopGroup();

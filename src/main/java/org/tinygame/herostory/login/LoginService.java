@@ -1,5 +1,6 @@
 package org.tinygame.herostory.login;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,8 @@ import org.tinygame.herostory.async.AsyncOperationProcessor;
 import org.tinygame.herostory.async.IAsyncOperation;
 import org.tinygame.herostory.login.db.IUserDao;
 import org.tinygame.herostory.login.db.UserEntity;
+import org.tinygame.herostory.util.RedisUtil;
+import redis.clients.jedis.Jedis;
 
 import java.util.function.Function;
 
@@ -64,6 +67,29 @@ public class LoginService {
         AsyncOperationProcessor.getInstance().process(asyncOp);
     }
 
+
+    /**
+     * 更新用户基本信息 登陆时调用
+     * @param userEntity
+     */
+    private void updateUserBasicInfoInRedis(UserEntity userEntity) {
+        if (userEntity == null) {
+            return;
+        }
+        try (Jedis redis = RedisUtil.getRedis()) {
+            int userId = userEntity.userId;
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId",userId);
+            jsonObject.put("userName",userEntity.userName);
+            jsonObject.put("heroAvatar",userEntity.heroAvatar);
+
+            //更新Redis数据
+            redis.hset("User_"+userEntity.userId,"BasicInfo",jsonObject.toJSONString(jsonObject));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+        }
+    }
 
     /**
      * 异步方式获取用户
@@ -133,10 +159,14 @@ public class LoginService {
                     userEntity.userName = _userName;
                     userEntity.password = _password;
                     userEntity.heroAvatar = "Hero_Shaman";
+                    //将用户添加到数据库中
                     dao.insertInto(userEntity);
+
                 }
 
                 _userEntity = userEntity;
+                LoginService.getInstance().updateUserBasicInfoInRedis(userEntity);
+
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(), ex);
             }

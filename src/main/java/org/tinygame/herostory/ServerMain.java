@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.tinygame.herostory.cmdHandler.CmdHandlerFactory;
+import org.tinygame.herostory.mq.MQProducer;
 import org.tinygame.herostory.util.RedisUtil;
 
 public class ServerMain {
@@ -19,6 +20,7 @@ public class ServerMain {
         GameMessageRecognizer.init();
         MySqlSessionFactory.init();
         RedisUtil.init();
+        MQProducer.init();
 
         //处理服务端连接的 类似大管家
         EventLoopGroup bossGroup = new NioEventLoopGroup();

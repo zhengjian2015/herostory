@@ -29,11 +29,8 @@ public final class RedisUtil {
         }
     }
 
-    /**
-     * 获取Redis 实例
-     * @return
-     */
-    public static Jedis getRedis(){
+
+    public static Jedis getJedis() {
         if(_jedisPool == null) {
             throw new RuntimeException("_jedisPool 尚未初始化");
         }
@@ -41,5 +38,4 @@ public final class RedisUtil {
 
         return redis;
     }
-
 }

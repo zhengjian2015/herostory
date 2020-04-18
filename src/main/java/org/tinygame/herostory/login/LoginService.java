@@ -76,7 +76,7 @@ public class LoginService {
         if (userEntity == null) {
             return;
         }
-        try (Jedis redis = RedisUtil.getRedis()) {
+        try (Jedis redis = RedisUtil.getJedis()) {
             int userId = userEntity.userId;
 
             JSONObject jsonObject = new JSONObject();

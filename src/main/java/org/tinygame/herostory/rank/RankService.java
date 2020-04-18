@@ -80,7 +80,7 @@ public final class RankService {
 
         @Override
         public void doAsync() {
-            try (Jedis redis = RedisUtil.getRedis()){
+            try (Jedis redis = RedisUtil.getJedis()){
                 //获取字符串集合
                 Set<Tuple> valSet = redis.zrangeByScoreWithScores("Rank",0,9);
                 _rankItemList = new ArrayList<>();
@@ -106,6 +106,29 @@ public final class RankService {
             } catch (Exception ex) {
                 LOGGER.error(ex.getMessage(),ex);
             }
+        }
+    }
+
+    /**
+     * 刷新排行榜
+     *
+     * @param winnerId 赢家 Id
+     * @param loserId 输家 Id
+     */
+    public void refreshRank(int winnerId, int loserId) {
+        try (Jedis redis = RedisUtil.getJedis()) {
+            // 增加用户的胜利和失败次数
+            redis.hincrBy("User_" + winnerId, "Win", 1);
+            redis.hincrBy("User_" + loserId, "Lose", 1);
+
+            // 看看赢家总共赢了多少次?
+            String winStr = redis.hget("User_" + winnerId, "Win");
+            int winInt = Integer.parseInt(winStr);
+
+            // 修改排名数据
+            redis.zadd("Rank", winInt, String.valueOf(winnerId));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
         }
     }
 
